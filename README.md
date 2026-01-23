@@ -2,7 +2,7 @@
 
 In the context of Cleo Harmony, containerization refers to packaging Harmony services into lightweight, portable containers using Docker and orchestrated via Kubernetes or another platform, resulting in faster deployments and scalable infrastructure.
 
-This document outlines requirements, and containerization specific platform instructions.
+This document outlines requirements, and containerization-specific platform instructions.
 
 > [!NOTE]
 > Currently, the only supported containerization platform is Kubernetes. See the [kubernetes](kubernetes/) directory for detailed deployment documentation.
