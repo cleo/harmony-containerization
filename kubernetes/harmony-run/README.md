@@ -250,7 +250,8 @@ Enable only the protocols you need for security and resource efficiency.
 
 Before installing this chart, you must create the following secrets in the target namespace. These secrets should be created as described in the [Secret Creation Examples](../harmony-init/README.md#secret-creation-examples).
 
-**Note**: The `cleo-log-system` secret is optional. If not provided, Harmony will use default logging configuration. The chart will continue to function without this secret.
+[!NOTE]
+> The `cleo-log-system` secret is optional. If not provided, Harmony will use default logging configuration. The chart will continue to function without this secret.
 
 ### Required Secrets (4)
 
@@ -325,9 +326,9 @@ kubectl scale statefulset harmony --replicas=3 -n harmony
 # Get load balancer endpoint
 kubectl get svc harmony -n harmony
 
-# Access admin console (port forwarding)
+# Access admin console locally (port forwarding)
 kubectl port-forward svc/harmony 5080:5080 -n harmony
-# Open: http://localhost:5080
+# Open: http://localhost:5080/Harmony
 
 # View logs
 kubectl logs harmony-1 -n harmony --tail=50
