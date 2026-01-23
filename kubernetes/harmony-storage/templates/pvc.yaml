@@ -1,0 +1,23 @@
+{{/*
+Validate platform configuration
+*/}}
+{{- include "harmony-storage.validatePlatform" . }}
+{{- if .Values.pvc.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.pvc.name }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "harmony-storage.labels" . | nindent 4 }}
+  annotations:
+    # Keep PVC even if Helm release is deleted
+    helm.sh/resource-policy: keep
+spec:
+  accessModes:
+    - {{ .Values.pvc.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.pvc.size }}
+  storageClassName: {{ .Values.storageClass.name }}
+{{- end }}

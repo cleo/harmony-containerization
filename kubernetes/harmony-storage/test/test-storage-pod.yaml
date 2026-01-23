@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-storage-pod
+  namespace: harmony
+spec:
+  containers:
+  - name: test-container
+    image: busybox:latest
+    imagePullPolicy: Always
+    command: ["/bin/sh"]
+    args: ["-c", "while true; do echo 'Shared persistent storage mount test'; ls -la /shared-config; sleep 30; done"]
+    volumeMounts:
+    - name: shared-storage
+      mountPath: /shared-config
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "100m"
+      limits:
+        memory: "128Mi"
+        cpu: "200m"
+    livenessProbe:
+      exec:
+        command:
+        - /bin/sh
+        - -c
+        - "ls /shared-config"
+      initialDelaySeconds: 5
+      periodSeconds: 30
+    securityContext:
+      runAsUser: 10000
+      runAsNonRoot: true
+      readOnlyRootFilesystem: true
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+  volumes:
+  - name: shared-storage
+    persistentVolumeClaim:
+      claimName: harmony-pvc
+  restartPolicy: Never

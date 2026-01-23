@@ -1,0 +1,70 @@
+# High availability cluster configuration with 5 replicas
+
+global:
+  namespace: harmony-ha
+  platform: aws
+
+harmony:
+  image:
+    name: harmony
+    repository: cleodev/harmony
+    tag: "1.0.0"
+    pullPolicy: IfNotPresent
+
+  statefulset:
+    replicas: 5
+    ordinalStart: 1
+
+  env:
+    systemName: "HAClusterSystem"
+    secretsMountPoint: "/var/secrets"
+
+  resources:
+    requests:
+      memory: "8192Mi"
+    limits:
+      memory: "16384Mi"
+
+  volumes:
+    secrets:
+      sources:
+        - secretName: cleo-license
+        - secretName: cleo-license-verification-code
+        - secretName: cleo-config-repo
+        - secretName: cleo-runtime-repo
+        - secretName: cleo-log-system
+          optional: false
+
+service:
+  headless:
+    enabled: true
+    name: harmony-service
+
+  loadBalancer:
+    enabled: true
+    name: harmony
+    type: LoadBalancer
+    sessionAffinity: ClientIP
+    externalTrafficPolicy: Local
+    
+    ports:
+      - name: admin
+        port: 5080
+        targetPort: 5080
+        enabled: true
+      - name: https
+        port: 443
+        targetPort: 443
+        enabled: true
+      - name: sftp
+        port: 22
+        targetPort: 22
+        enabled: true
+
+    passiveFtp:
+      enabled: false
+
+persistence:
+  enabled: true
+  claimName: "harmony-pvc"
+  mountPath: "/shared-config"

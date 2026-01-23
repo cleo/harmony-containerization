@@ -1,0 +1,110 @@
+# Example values file for harmony-storage chart
+# This file demonstrates common configuration patterns for cloud storage
+# Copy this file and customize for your cloud provider:
+#   cp values.example.yaml my-values-aws.yaml
+#   helm install harmony-storage . -f my-values-aws.yaml -n harmony
+
+# =============================================================================
+# AWS EFS Configuration Example
+# =============================================================================
+# Use this configuration when deploying on AWS EKS with EFS storage
+
+global:
+  namespace: harmony
+  platform: aws  # REQUIRED: must be 'aws', 'azure', or 'gcp'
+
+storageClass:
+  enabled: true
+  name: "harmony-sc"
+  # Retain ensures data persists even if PVC is deleted
+  # Change to Delete only if you want automatic cleanup
+  reclaimPolicy: "Retain"
+  
+  # AWS EFS configuration example
+  efs:
+    # EFS file system ID from create-efs.sh output
+    # Example: fs-1234567890abcdef0
+    fileSystemId: "fs-1234567890abcdef0"
+    
+    # EFS Access Point configuration
+    accessPoint:
+      # Root directory for Harmony data
+      path: "/harmony-data"
+      
+      # User ID for file ownership (default: 1000)
+      uid: "1000"
+      
+      # Group ID for file ownership (default: 1000)
+      gid: "1000"
+      
+      # Directory permissions (755 = rwxr-xr-x)
+      permissions: "0755"
+
+pvc:
+  enabled: true
+  name: "harmony-pvc"
+  # ReadWriteMany allows multiple pods to mount the volume simultaneously
+  accessMode: ReadWriteMany
+  # Storage size - EFS is elastic, this is just the requested size
+  size: 10Gi
+
+# =============================================================================
+# Azure Files NFS Configuration Example
+# =============================================================================
+# Use this configuration when deploying on Azure AKS with Azure Files NFS
+
+# global:
+#   namespace: harmony
+#   platform: azure
+#
+# storageClass:
+#   enabled: true
+#   name: "harmony-sc"
+#   reclaimPolicy: "Retain"
+#   
+#   # Azure Files NFS configuration
+#   nfs:
+#     # Storage account name from create-nfs.sh output
+#     # Example: harmonyconfignfs12345
+#     storageAccountName: "harmonyconfignfs12345"
+#     
+#     # File share name from create-nfs.sh output
+#     shareName: "harmony-config-share"
+#
+# pvc:
+#   enabled: true
+#   name: "harmony-pvc"
+#   accessMode: ReadWriteMany
+#   # Azure Files is provisioned storage, size determines performance tier
+#   # 100Gi = Standard tier, 1TiB+ = Premium tier
+#   size: 100Gi
+
+# =============================================================================
+# Google Cloud Filestore Configuration Example
+# =============================================================================
+# Use this configuration when deploying on Google GKE with Filestore
+
+# global:
+#   namespace: harmony
+#   platform: gcp
+#
+# storageClass:
+#   enabled: true
+#   name: "harmony-sc"
+#   reclaimPolicy: "Retain"
+#   
+#   # Google Cloud Filestore configuration
+#   filestore:
+#     # Filestore instance IP from create-filestore.sh output
+#     # Example: 10.0.0.2
+#     ip: "10.0.0.2"
+#     
+#     # Filestore share name (default: harmony_data)
+#     share: "harmony_data"
+#
+# pvc:
+#   enabled: true
+#   name: "harmony-pvc"
+#   accessMode: ReadWriteMany
+#   # Filestore is provisioned storage, minimum 1TiB for BASIC_HDD tier
+#   size: 1Ti

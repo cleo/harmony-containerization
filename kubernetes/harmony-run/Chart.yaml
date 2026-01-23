@@ -1,0 +1,11 @@
+apiVersion: v2
+name: harmony-run
+description: A Helm chart for deploying Harmony runtime instances
+type: application
+version: 1.0.0
+appVersion: "PR-11140"
+keywords:
+  - harmony
+  - runtime
+sources:
+  - https://github.com/your-org/harmony-charts

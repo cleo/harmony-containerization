@@ -1,0 +1,24 @@
+# AWS EFS test configuration for harmony-storage chart
+
+global:
+  namespace: harmony
+  platform: aws
+
+storageClass:
+  enabled: true
+  name: "harmony-sc"
+  reclaimPolicy: "Retain"
+  
+  efs:
+    fileSystemId: "fs-0123456789abcdef0"
+    accessPoint:
+      path: "/harmony-data"
+      uid: "1000"
+      gid: "1000"
+      permissions: "0755"
+
+pvc:
+  enabled: true
+  name: "harmony-pvc"
+  accessMode: ReadWriteMany
+  size: 5Gi

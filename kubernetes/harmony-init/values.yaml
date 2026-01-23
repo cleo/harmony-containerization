@@ -1,0 +1,62 @@
+# Default values for harmony-init chart
+
+# Global settings
+global:
+  # Target namespace for all resources
+  namespace: harmony
+
+# Harmony initialization job configuration
+harmonyInit:
+  # Container image configuration
+  image:
+    # Container name in the pod
+    name: harmony
+    # Docker image repository
+    repository: cleodev/harmony
+    # Image tag - use specific version tags in production
+    tag: PR-11140
+    # Image pull policy: Always, IfNotPresent, Never
+    # Use IfNotPresent for production with specific tags
+    pullPolicy: Always
+
+  # Kubernetes Job configuration
+  job:
+    # The number of times a Job will be retried before it is marked as failed
+    # Increase for unreliable environments, decrease for faster failure detection
+    backoffLimit: 2
+    # Job restart policy: Never, OnFailure
+    # Never is recommended for initialization jobs
+    restartPolicy: Never
+
+  # Environment variables passed to the harmony container
+  env:
+    # CLEO_SYSTEM_NAME: the name of this system (group of Harmony instances)
+    # This should be unique per environment/system
+    systemName: System1
+    # CLEO_SECRETS_MOUNT_POINT: the location where secrets will be mounted
+    secretsMountPoint: /var/secrets
+
+  # Volume configuration for secrets
+  volumes:
+    secrets:
+      # Initialization secrets to be used
+      sources:
+        - secretName: cleo-license
+        - secretName: cleo-license-verification-code
+        - secretName: cleo-config-repo
+        - secretName: cleo-runtime-repo
+        - secretName: cleo-default-admin-password
+        - secretName: cleo-system-settings
+        - secretName: cleo-log-system
+          optional: true
+
+# Persistence configuration for AWS/Azure/GCP storage
+persistence:
+  # Enable persistent storage (mounts volume to pods)
+  enabled: false
+  
+  # Name of the PersistentVolumeClaim
+  claimName: "harmony-pvc"
+
+  # Mount point in the harmony file system
+  mountPath: "/shared-config"

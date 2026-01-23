@@ -1,0 +1,12 @@
+apiVersion: v2
+name: harmony-storage
+description: Shared storage infrastructure for Harmony applications
+type: application
+version: 1.0.0
+keywords:
+  - infrastructure
+  - harmony
+  - storage
+  - shared
+sources:
+  - https://github.com/your-org/harmony-charts

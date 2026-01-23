@@ -1,0 +1,70 @@
+{{/*
+Validate platform configuration
+*/}}
+{{- include "harmony.validatePlatform" . }}
+{{- if .Values.service.headless.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.service.headless.name }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "harmony.labels" . | nindent 4 }}
+    service-type: headless
+spec:
+  clusterIP: None
+  selector:
+    {{- include "harmony.selectorLabels" . | nindent 4 }}
+{{- end }}
+---
+{{- if .Values.service.loadBalancer.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.service.loadBalancer.name }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "harmony.labels" . | nindent 4 }}
+    service-type: loadbalancer
+  {{- if eq .Values.global.platform "aws" }}
+  {{- with .Values.service.loadBalancer.annotations.aws }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- else if eq .Values.global.platform "azure" }}
+  {{- with .Values.service.loadBalancer.annotations.azure }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- else if eq .Values.global.platform "gcp" }}
+  {{- with .Values.service.loadBalancer.annotations.gcp }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
+spec:
+  type: {{ .Values.service.loadBalancer.type }}
+  {{- if .Values.service.loadBalancer.sessionAffinity }}
+  sessionAffinity: {{ .Values.service.loadBalancer.sessionAffinity }}
+  {{- end }}
+  {{- if .Values.service.loadBalancer.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ .Values.service.loadBalancer.externalTrafficPolicy }}
+  {{- end }}
+  selector:
+    {{- include "harmony.selectorLabels" . | nindent 4 }}
+  ports:
+  {{- range .Values.service.loadBalancer.ports }}
+    {{- if .enabled }}
+    - name: {{ .name }}-port
+      port: {{ .port }}
+      targetPort: {{ .targetPort }}
+    {{- end }}
+  {{- end }}
+  {{- if .Values.service.loadBalancer.passiveFtp.enabled }}
+    {{- range .Values.service.loadBalancer.passiveFtp.passivePorts }}
+    - name: {{ .name }}-port
+      port: {{ .port }}
+      targetPort: {{ .targetPort }}
+    {{- end }}
+  {{- end }}
+{{- end }}

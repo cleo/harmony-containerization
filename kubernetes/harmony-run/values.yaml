@@ -1,0 +1,178 @@
+# Default values for harmony chart
+
+# Global settings
+global:
+  # Target namespace for all resources
+  namespace: harmony
+  # Target platform (REQUIRED: aws, azure, or gcp)
+  platform: ""
+
+# Harmony application configuration
+harmony:
+  # Image configuration
+  image:
+    name: harmony
+    repository: cleodev/harmony
+    tag: PR-11140
+    pullPolicy: Always
+
+  # StatefulSet configuration
+  statefulset:
+    # Number of Harmony instances to run
+    replicas: 2
+    # Start naming at harmony-1 instead of harmony-0
+    ordinalStart: 1
+
+  # Environment variables
+  env:
+    # CLEO_SYSTEM_NAME: the name of this system (group of Harmony instances)
+    systemName: System1
+    # CLEO_SECRETS_MOUNT_POINT: the location of the secrets
+    secretsMountPoint: /var/secrets
+
+  # Resource configuration
+  resources:
+    requests:
+      memory: "4096Mi"
+    limits:
+      memory: "8192Mi"
+
+  # Volume configuration
+  volumes:
+    secrets:
+      # Runtime secrets to be used
+      sources:
+        - secretName: cleo-license
+        - secretName: cleo-license-verification-code
+        - secretName: cleo-config-repo
+        - secretName: cleo-runtime-repo
+        - secretName: cleo-log-system
+          optional: true
+
+# Service configuration
+service:
+  # Headless service configuration
+  headless:
+    enabled: true
+    name: harmony-service
+
+  # Load balancer service configuration
+  loadBalancer:
+    enabled: true
+    name: harmony
+    type: LoadBalancer
+    
+    # Platform-specific annotations
+    annotations:
+      aws:
+        # AWS Load Balancer annotations
+        service.beta.kubernetes.io/aws-load-balancer-type: external
+        service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+        service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: instance
+        service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+        service.beta.kubernetes.io/aws-load-balancer-target-group-attributes: "preserve_client_ip.enabled=true,stickiness.enabled=true,stickiness.type=source_ip"
+      azure:
+        # Azure Load Balancer annotations
+        service.beta.kubernetes.io/azure-load-balancer-client-ip: "true"
+      gcp:
+        # Google Cloud Platform Load Balancer annotations
+        cloud.google.com/load-balancer-type: "External"
+    
+    # Session affinity configuration
+    sessionAffinity: ClientIP
+    externalTrafficPolicy: Local
+    
+    # Port configuration
+    ports:
+      - name: admin
+        port: 5080
+        targetPort: 5080
+        enabled: true
+      - name: http
+        port: 80
+        targetPort: 80
+        enabled: false
+      - name: https
+        port: 443
+        targetPort: 443
+        enabled: false
+      - name: ftpData
+        port: 20
+        targetPort: 20
+        enabled: false
+      - name: ftpControl
+        port: 21
+        targetPort: 21
+        enabled: false
+      - name: sftp
+        port: 22
+        targetPort: 22
+        enabled: false
+      - name: oftpStandard
+        port: 3305
+        targetPort: 3305
+        enabled: false
+      - name: oftpTls
+        port: 6619
+        targetPort: 6619
+        enabled: false
+      - name: smtp
+        port: 25
+        targetPort: 25
+        enabled: false
+      - name: smtps-explicit
+        port: 587
+        targetPort: 587
+        enabled: false
+      - name: smtps-implicit
+        port: 465
+        targetPort: 465
+        enabled: false
+      
+    # FTP passive data ports configuration
+    # These ports should match the lowPort and highPort in cleo-system-settings
+    # Another additional constraint is that the maximum number of open ports on an AWS load balancer is 50
+    passiveFtp:
+      enabled: false
+      passivePorts:
+        - name: ftp-passive-20900
+          port: 25900
+          targetPort: 25900
+        - name: ftp-passive-20901
+          port: 25901
+          targetPort: 25901
+        - name: ftp-passive-20902
+          port: 25902
+          targetPort: 25902
+        - name: ftp-passive-20903
+          port: 25903
+          targetPort: 25903
+        - name: ftp-passive-20904
+          port: 25904
+          targetPort: 25904
+        - name: ftp-passive-20905
+          port: 25905
+          targetPort: 25905
+        - name: ftp-passive-20906
+          port: 25906
+          targetPort: 25906
+        - name: ftp-passive-20907
+          port: 25907
+          targetPort: 25907
+        - name: ftp-passive-20908
+          port: 25908
+          targetPort: 25908
+        - name: ftp-passive-20909
+          port: 25909
+          targetPort: 25909
+
+# Persistence configuration for AWS/Azure storage
+persistence:
+  # Enable persistent storage (mounts volume to pods)
+  enabled: false
+
+  # Name of the PersistentVolumeClaim
+  claimName: "harmony-pvc"
+
+  # Mount point in the harmony file system
+  mountPath: "/shared-config"

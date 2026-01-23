@@ -1,0 +1,71 @@
+# Default values for harmony-storage chart
+
+# Global settings
+global:
+  # Target namespace for storage resources
+  namespace: harmony
+
+  # Target platform (REQUIRED: aws, azure, or gcp)
+  platform:  ""
+
+# Storage Class configuration
+storageClass:
+  # Whether to create the storage class
+  enabled: true
+
+  # Name of the storage class
+  name: "harmony-sc"
+
+  # Reclaim policy: Retain or Delete
+  reclaimPolicy: "Retain"
+
+  # EFS-specific configuration (AWS)
+  efs:
+    # EFS file system ID (REQUIRED for AWS)
+    # Get this by running aws/create-efs.sh or manually creating EFS
+    fileSystemId: ""
+
+    # Access Point configuration for dynamic provisioning
+    accessPoint:
+      # Root directory for access points
+      path: "/harmony-data"
+      # User ID for file ownership
+      uid: "1000"
+      # Group ID for file ownership
+      gid: "1000"
+      # Directory permissions
+      permissions: "0755"
+
+  # Azure Files NFS-specific configuration (Azure)
+  nfs:
+    # Azure Files storage account name (REQUIRED for Azure)
+    # Get this by running azure/create-nfs.sh
+    storageAccountName: ""
+
+    # Azure Files NFS share name (REQUIRED for Azure)
+    # Get this by running azure/create-nfs.sh
+    shareName: ""
+
+  # Google Cloud Filestore-specific configuration (GCP)
+  filestore:
+    # Filestore instance IP address (REQUIRED for GCP)
+    # Get this by running gcp/create-filestore.sh
+    ip: ""
+
+    # Filestore share name (REQUIRED for GCP)
+    # Get this by running gcp/create-filestore.sh
+    share: ""
+
+# Persistent Volume Claim configuration
+pvc:
+  # Whether to create the PVC
+  enabled: true
+  
+  # Name of the PVC (will be shared across applications)
+  name: "harmony-pvc"
+  
+  # Access mode (ReadWriteMany required for EFS shared access)
+  accessMode: ReadWriteMany
+  
+  # Size of the PVC
+  size: 5Gi

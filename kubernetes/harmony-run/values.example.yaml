@@ -1,0 +1,229 @@
+# Example values file for harmony-run chart
+# This file demonstrates common configuration patterns for Harmony runtime
+# Copy this file and customize for your environment:
+#   cp values.example.yaml my-values.yaml
+#   helm install harmony-runtime . -f my-values.yaml -n harmony
+
+# Global configuration shared across all Harmony charts
+global:
+  # Target namespace for deployment
+  namespace: harmony
+  
+  # REQUIRED: Cloud platform for load balancer configuration
+  # Valid values: aws, azure, gcp
+  # This sets platform-specific annotations for optimal load balancer behavior
+  platform: aws
+
+# Harmony runtime configuration
+harmony:
+  # Container image configuration
+  image:
+    name: harmony
+    repository: cleodev/harmony
+    # IMPORTANT: Use specific version tags in production
+    tag: PR-11140
+    pullPolicy: IfNotPresent
+
+  # StatefulSet configuration
+  statefulset:
+    # Number of Harmony runtime instances
+    # Minimum 2 recommended for high availability
+    # Scale based on concurrent client connections and throughput requirements
+    replicas: 2
+    
+    # Starting ordinal for pod naming (harmony-1, harmony-2, etc.)
+    # Default is 1, change only if you have specific naming requirements
+    ordinalStart: 1
+
+  # Environment configuration
+  env:
+    # System name - must match the name used in harmony-init
+    systemName: System1
+    
+    # Mount point for secrets
+    secretsMountPoint: "/var/secrets"
+
+  # Resource allocation
+  # Adjust based on your workload and monitoring data
+  resources:
+    requests:
+      # Minimum memory required for pod scheduling
+      # 4GB is a good starting point for moderate workloads
+      memory: "4096Mi"
+    limits:
+      # Maximum memory before pod is killed (OOMKilled)
+      # 8GB provides headroom for peak loads
+      memory: "8192Mi"
+
+  # Secret volumes to mount
+  volumes:
+    secrets:
+      sources:
+        # Required: License key file
+        - secretName: cleo-license
+        
+        # Required: License verification code
+        - secretName: cleo-license-verification-code
+        
+        # Required: Static configuration repository settings
+        - secretName: cleo-config-repo
+        
+        # Required: Runtime configuration repository settings
+        - secretName: cleo-runtime-repo
+        
+        # Optional: Log system configuration
+        - secretName: cleo-log-system
+          optional: true
+
+# Service configuration
+service:
+  # Headless service for internal pod-to-pod communication
+  headless:
+    enabled: true
+    name: harmony-service
+
+  # Load balancer service for external access
+  loadBalancer:
+    enabled: true
+    name: harmony
+    type: LoadBalancer
+    
+    # Session affinity ensures clients stick to the same pod
+    # Required for stateful protocols like FTP
+    sessionAffinity: ClientIP
+    
+    # Local traffic policy preserves client source IP
+    # Important for IP-based access controls
+    externalTrafficPolicy: Local
+    
+    # Protocol ports configuration
+    # Enable only the protocols you need for security and cost optimization
+    ports:
+      # Admin console - ALWAYS NEEDED
+      - name: admin
+        port: 5080
+        targetPort: 5080
+        enabled: true
+      
+      # HTTP - Enable for web-based file transfer
+      - name: http
+        port: 80
+        targetPort: 80
+        enabled: true
+      
+      # HTTPS - Enable for secure web-based file transfer and AS2
+      - name: https
+        port: 443
+        targetPort: 443
+        enabled: true
+      
+      # SFTP - Enable for secure file transfer
+      - name: sftp
+        port: 22
+        targetPort: 22
+        enabled: true
+      
+      # FTP Control - Enable for FTP protocol
+      - name: ftp-control
+        port: 21
+        targetPort: 21
+        enabled: false
+      
+      # FTP Data - Enable if using active FTP
+      - name: ftp-data
+        port: 20
+        targetPort: 20
+        enabled: false
+      
+      # SMTP - Enable for email-based file transfer
+      - name: smtp
+        port: 25
+        targetPort: 25
+        enabled: false
+      
+      # SMTP Submission - Enable for authenticated SMTP
+      - name: smtp-submission
+        port: 587
+        targetPort: 587
+        enabled: false
+      
+      # SMTPS - Enable for SMTP over TLS
+      - name: smtps
+        port: 465
+        targetPort: 465
+        enabled: false
+      
+      # OFTP - Enable for Odette File Transfer Protocol
+      - name: oftp
+        port: 3305
+        targetPort: 3305
+        enabled: false
+      
+      # OFTP TLS - Enable for OFTP over TLS
+      - name: oftp-tls
+        port: 6619
+        targetPort: 6619
+        enabled: false
+    
+    # FTP Passive mode configuration
+    # Enable this if you need FTP passive mode support
+    # WARNING: Each passive port counts toward load balancer port limit (50 on AWS)
+    passiveFtp:
+      enabled: false
+      passivePorts:
+        - name: ftp-passive-1
+          port: 25900
+          targetPort: 25900
+        - name: ftp-passive-2
+          port: 25901
+          targetPort: 25901
+        - name: ftp-passive-3
+          port: 25902
+          targetPort: 25902
+        - name: ftp-passive-4
+          port: 25903
+          targetPort: 25903
+        - name: ftp-passive-5
+          port: 25904
+          targetPort: 25904
+        # Add more ports as needed, up to 25910 (5 ports shown by default)
+        # Passive port range must match what's configured in Harmony admin console
+
+# Persistent storage configuration
+persistence:
+  # Set to true when using harmony-storage chart
+  enabled: false
+  
+  # Name of the PVC created by harmony-storage chart
+  claimName: "harmony-pvc"
+  
+  # Mount path inside the container
+  mountPath: "/shared-config"
+
+# FTP with passive mode enabled
+# service:
+#   loadBalancer:
+#     ports:
+#       - name: ftp-control
+#         port: 21
+#         targetPort: 21
+#         enabled: true
+#     passiveFtp:
+#       enabled: true
+#       # Configure 20 ports for moderate FTP traffic
+#       passivePorts:
+#         - name: ftp-passive-1
+#           port: 25900
+#           targetPort: 25900
+#         # ... add ports 25901-25919
+# IMPORTANT: Configure same range (25900-25919) in Harmony admin console
+
+# ---
+# Alternative configuration example for S3/AzureBlob/GCS storage (no PVC needed)
+# ---
+# persistence:
+#   enabled: false
+#   # When using S3, Azure Blob, GCS or other object storage,
+#   # PVC is not needed. Configure storage in cleo-config-repo
+#   # and cleo-runtime-repo secrets instead.
+

@@ -1,0 +1,87 @@
+# Example values file for harmony-init chart
+# This file demonstrates common configuration patterns for Harmony initialization
+# Copy this file and customize for your environment:
+#   cp values.example.yaml my-values.yaml
+#   helm install harmony-init . -f my-values.yaml -n harmony
+
+# Global configuration shared across all Harmony charts
+global:
+  # Target namespace for deployment
+  namespace: harmony
+
+# Harmony initialization configuration
+harmonyInit:
+  # Container image configuration
+  image:
+    name: harmony
+    repository: cleodev/harmony
+    # IMPORTANT: Use specific version tags in production, not 'latest' or PR tags
+    tag: "PR-11140"
+    # IfNotPresent is recommended for production to avoid unnecessary pulls
+    pullPolicy: IfNotPresent
+
+  # Job configuration
+  job:
+    # Number of retries before marking job as failed
+    backoffLimit: 2
+    # Job restart policy - Never is recommended for initialization
+    restartPolicy: Never
+
+  # Environment configuration
+  env:
+    # System name - make this descriptive and unique per environment
+    systemName: System1
+    
+    # Mount point for secrets inside the container
+    # Default is fine for most use cases
+    secretsMountPoint: "/var/secrets"
+
+  # Secret volumes to mount
+  # All secrets must exist in the namespace before installing this chart
+  volumes:
+    secrets:
+      sources:
+        # Required: License key file
+        - secretName: cleo-license
+        
+        # Required: License verification code
+        - secretName: cleo-license-verification-code
+        
+        # Required: Static configuration repository settings
+        - secretName: cleo-config-repo
+        
+        # Required: Runtime configuration repository settings
+        - secretName: cleo-runtime-repo
+        
+        # Required: Default admin password for first login
+        - secretName: cleo-default-admin-password
+        
+        # Required: System settings including node discovery URLs
+        - secretName: cleo-system-settings
+        
+        # Optional: Log system configuration (Datadog, Splunk, etc.)
+        # Set optional: true for secrets that may not exist
+        - secretName: cleo-log-system
+          optional: true
+
+# Persistent storage configuration
+# Enable this if you're using shared file storage (EFS, Azure Files, Filestore)
+persistence:
+  # Set to true when using harmony-storage chart with file-based storage
+  enabled: false
+  
+  # Name of the PVC created by harmony-storage chart
+  claimName: "harmony-pvc"
+  
+  # Mount path inside the container
+  # This should match the rootPath in cleo-config-repo and cleo-runtime-repo secrets
+  mountPath: "/shared-config"
+
+# ---
+# Alternative configuration example for S3/Blob storage (no PVC needed)
+# ---
+# persistence:
+#   enabled: false
+#   # When using S3, Azure Blob, or other object storage,
+#   # PVC is not needed. Configure storage in cleo-config-repo
+#   # and cleo-runtime-repo secrets instead.

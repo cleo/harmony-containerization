@@ -1,0 +1,49 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "harmony-init.fullname" . }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "harmony-init.labels" . | nindent 4 }}
+spec:
+  backoffLimit: {{ .Values.harmonyInit.job.backoffLimit }}
+  template:
+    metadata:
+      labels:
+        {{- include "harmony-init.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: {{ .Values.harmonyInit.image.name }}
+        image: "{{ .Values.harmonyInit.image.repository }}:{{ .Values.harmonyInit.image.tag }}"
+        imagePullPolicy: {{ .Values.harmonyInit.image.pullPolicy }}
+        args: ["-s", "service"]
+        env:
+        - name: CLEO_SYSTEM_NAME
+          value: {{ .Values.harmonyInit.env.systemName | quote }}
+        - name: CLEO_SECRETS_MOUNT_POINT
+          value: {{ .Values.harmonyInit.env.secretsMountPoint | quote }}
+        volumeMounts:
+        - name: initsecrets
+          mountPath: {{ .Values.harmonyInit.env.secretsMountPoint }}
+          readOnly: true
+        {{- if .Values.persistence.enabled }}
+        - name: shared-storage
+          mountPath: {{ .Values.persistence.mountPath }}
+        {{- end }}
+      restartPolicy: {{ .Values.harmonyInit.job.restartPolicy }}
+      volumes:
+      - name: initsecrets
+        projected:
+          sources:
+          {{- range .Values.harmonyInit.volumes.secrets.sources }}
+          {{- if or (ne .secretName "cleo-log-system") .optional }}
+          - secret:
+              name: {{ .secretName }}
+              optional: {{ default false .optional }}
+          {{- end }}
+          {{- end }}
+      {{- if .Values.persistence.enabled }}
+      - name: shared-storage
+        persistentVolumeClaim:
+          claimName: {{ .Values.persistence.claimName }}
+      {{- end }}

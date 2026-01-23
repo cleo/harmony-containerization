@@ -1,0 +1,20 @@
+# GCP Filestore test configuration for harmony-storage chart
+
+global:
+  namespace: harmony
+  platform: gcp
+
+storageClass:
+  enabled: true
+  name: "harmony-sc"
+  reclaimPolicy: "Retain"
+  
+  filestore:
+    ip: "10.0.0.2"
+    share: "harmony_data"
+
+pvc:
+  enabled: true
+  name: "harmony-pvc"
+  accessMode: ReadWriteMany
+  size: 5Gi

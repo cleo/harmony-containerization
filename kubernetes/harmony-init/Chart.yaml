@@ -1,0 +1,11 @@
+apiVersion: v2
+name: harmony-init
+description: A Helm chart for running Harmony initialization jobs
+type: application
+version: 1.0.0
+appVersion: "PR-11140"
+keywords:
+  - harmony
+  - initialization
+sources:
+  - https://github.com/your-org/harmony-charts

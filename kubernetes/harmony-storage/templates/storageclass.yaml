@@ -1,0 +1,103 @@
+{{/*
+Validate platform configuration
+*/}}
+{{- include "harmony-storage.validatePlatform" . }}
+{{- if .Values.storageClass.enabled }}
+{{- if eq .Values.global.platform "aws" }}
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: {{ .Values.storageClass.name }}
+  labels:
+    {{- include "harmony-storage.labels" . | nindent 4 }}
+  annotations:
+    # Keep storage class even if Helm release is deleted
+    helm.sh/resource-policy: keep
+provisioner: efs.csi.aws.com
+parameters:
+  # EFS file system ID (required)
+  fileSystemId: {{ .Values.storageClass.efs.fileSystemId | required "storageClass.efs.fileSystemId is required for AWS platform" }}
+
+  # Access point configuration for dynamic access points
+  provisioningMode: efs-ap
+  {{- if .Values.storageClass.efs.accessPoint.path }}
+  path: {{ .Values.storageClass.efs.accessPoint.path | quote }}
+  {{- end }}
+  {{- if .Values.storageClass.efs.accessPoint.uid }}
+  uid: {{ .Values.storageClass.efs.accessPoint.uid | quote }}
+  {{- end }}
+  {{- if .Values.storageClass.efs.accessPoint.gid }}
+  gid: {{ .Values.storageClass.efs.accessPoint.gid | quote }}
+  {{- end }}
+  {{- if .Values.storageClass.efs.accessPoint.permissions }}
+  permissions: {{ .Values.storageClass.efs.accessPoint.permissions | quote }}
+  {{- end }}
+
+  # Directory permissions for the root path
+  directoryPerms: "0755"
+
+allowVolumeExpansion: true
+volumeBindingMode: Immediate
+reclaimPolicy: {{ .Values.storageClass.reclaimPolicy }}
+{{- else if eq .Values.global.platform "azure" }}
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: {{ .Values.storageClass.name }}
+  labels:
+    {{- include "harmony-storage.labels" . | nindent 4 }}
+  annotations:
+    # Keep storage class even if Helm release is deleted
+    helm.sh/resource-policy: keep
+provisioner: file.csi.azure.com
+parameters:
+  # Azure Files NFS protocol
+  protocol: nfs
+
+  # Premium storage tier (required for NFS)
+  skuName: Premium_LRS
+
+  # Storage account name (required)
+  storageAccount: {{ .Values.storageClass.nfs.storageAccountName | required "storageClass.nfs.storageAccountName is required for Azure platform" }}
+
+  # Resource group containing the storage account (required if not in managed RG)
+  {{- if .Values.storageClass.nfs.resourceGroup }}
+  resourceGroup: {{ .Values.storageClass.nfs.resourceGroup }}
+  {{- end }}
+
+  # NFS share name (required)
+  shareName: {{ .Values.storageClass.nfs.shareName | required "storageClass.nfs.shareName is required for Azure platform" }}
+
+allowVolumeExpansion: true
+volumeBindingMode: Immediate
+reclaimPolicy: {{ .Values.storageClass.reclaimPolicy }}
+mountOptions:
+  - actimeo=30
+  - noresvport
+{{- else if eq .Values.global.platform "gcp" }}
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: {{ .Values.storageClass.name }}
+  labels:
+    {{- include "harmony-storage.labels" . | nindent 4 }}
+  annotations:
+    # Keep storage class even if Helm release is deleted
+    helm.sh/resource-policy: keep
+provisioner: nfs.csi.k8s.io
+parameters:
+  # NFS server (Filestore IP address)
+  server: {{ .Values.storageClass.filestore.ip | required "storageClass.filestore.ip is required for GCP platform" }}
+
+  # NFS share path
+  share: /{{ .Values.storageClass.filestore.share | required "storageClass.filestore.share is required for GCP platform" }}
+
+allowVolumeExpansion: false
+volumeBindingMode: Immediate
+reclaimPolicy: {{ .Values.storageClass.reclaimPolicy }}
+mountOptions:
+  - hard
+  - nfsvers=3
+  - nolock
+{{- end }}
+{{- end }}
