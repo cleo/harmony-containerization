@@ -31,6 +31,12 @@ Each Harmony node creates a parent subdirectory using the system name (if not al
 
 **Supported repository types:** `smb`
 
+### Enterprise Log Management System
+
+Each Harmony node's system log events are stored in real-time into the customer-provided log observability platform and subsequently retrieved upon request by the Harmony REST API and Admin Web UI. 
+
+**Supported log management systems:** `splunk`, `datadog`
+
 ### Access to cleo.com
 
 Each Harmony container verifies the enterprise license at startup. To do this, https://license.cleo.com must be accessible from the container.
