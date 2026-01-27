@@ -31,11 +31,17 @@ Each Harmony node creates a parent subdirectory using the system name (if not al
 
 **Supported repository types:** `smb`
 
+### Enterprise Log Management System
+
+Each Harmony node's system log events are stored in real-time into the customer-provided log observability platform and subsequently retrieved upon request by the Harmony REST API and Admin Web UI. 
+
+**Supported log management systems:** `splunk`, `datadog`
+
 ### Access to cleo.com
 
 Each Harmony container verifies the enterprise license at startup. To do this, https://license.cleo.com must be accessible from the container.
 
-If license.cleo.com is not accessible at startup, Harmony will still start up and periodically retry license verification. However, a 4-day grace period is initiated. If the license is not verified during this period, the container will exit. In case the problem reaching license.cleo.com is on Cleo's side, an internal IT ticket is created for the enterprise license's serial number by posting to https://it-ticket.cleo.com.
+If license.cleo.com is not accessible at startup, Harmony still starts and periodically retries license verification, initiating a four-day grace period. If the license is not verified within the grace period, the container exits. If the issue is determined to be on Cleo's side, Harmony automatically creates an internal Cleo IT ticket for the affected enterprise license by posting to https://it-ticket.cleo.com.
 
 Harmony will email the system administrator if the grace period is initiated. Therefore, Cleo strongly recommends setting the system administrator email address and the necessary SMTP proxy.
 
