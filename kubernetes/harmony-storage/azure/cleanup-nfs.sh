@@ -157,7 +157,7 @@ while read -r STORAGE_ACCOUNT_NAME STORAGE_RG; do
 
     # Get current network access configuration
     echo "📋 Checking network access configuration..."
-    NETWORK_CONFIG=$(az storage account show --name "$STORAGE_ACCOUNT_NAME" --resource-group "$STORAGE_RG" --query '{defaultAction: networkAcls.defaultAction, virtualNetworkRules: networkAcls.virtualNetworkRules}' --output json)
+    NETWORK_CONFIG=$(az storage account show --name "$STORAGE_ACCOUNT_NAME" --resource-group "$STORAGE_RG" --query '{defaultAction: networkRuleSet.defaultAction, virtualNetworkRules: networkRuleSet.virtualNetworkRules}' --output json)
     DEFAULT_ACTION=$(echo "$NETWORK_CONFIG" | jq -r '.defaultAction // "Allow"')
     VNET_RULES=$(echo "$NETWORK_CONFIG" | jq -r '.virtualNetworkRules // []')
 
@@ -166,7 +166,7 @@ while read -r STORAGE_ACCOUNT_NAME STORAGE_RG; do
     # Remove VNet rules if they exist
     if [ "$(echo "$VNET_RULES" | jq length)" -gt 0 ]; then
         echo "🗑️  Removing VNet network rules..."
-        echo "$VNET_RULES" | jq -r '.[].id' | while read -r SUBNET_ID; do
+        echo "$VNET_RULES" | jq -r '.[].virtualNetworkResourceId' | while read -r SUBNET_ID; do
             if [ -n "$SUBNET_ID" ] && [ "$SUBNET_ID" != "null" ]; then
                 echo "Removing network rule for subnet: $SUBNET_ID"
                 az storage account network-rule remove \
