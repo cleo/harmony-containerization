@@ -68,8 +68,8 @@ if [ "$SHOW_HELP" = true ]; then
     echo "Azure Files NFS Cleanup Script"
     echo ""
     echo "Usage:"
-    echo "  ./cleanup-nfs.sh                    # Interactive mode - prompts for each deletion"
-    echo "  ./cleanup-nfs.sh --delete-storage   # Automatically delete all storage accounts and shares"
+    echo "  ./cleanup-nfs.sh                    # Interactive mode - prompts whether to delete storage"
+    echo "  ./cleanup-nfs.sh --delete-storage   # Automatically delete all storage accounts and shares (no prompts)"
     echo "  ./cleanup-nfs.sh --help             # Show this help message"
     echo ""
     echo "Environment variables required:"
@@ -78,8 +78,8 @@ if [ "$SHOW_HELP" = true ]; then
     echo "  LOCATION          - Your Azure region"
     echo ""
     echo "Examples:"
-    echo "  source ./aks-env-vars.sh && ./cleanup-nfs.sh"
-    echo "  source ./aks-env-vars.sh && ./cleanup-nfs.sh --delete-storage"
+    echo "  source ./setup-env.sh && ./cleanup-nfs.sh"
+    echo "  source ./setup-env.sh && ./cleanup-nfs.sh --delete-storage"
     exit 0
 fi
 
@@ -198,6 +198,18 @@ if [ "$DELETE_STORAGE" = true ]; then
     echo "🗑️  Automatic storage deletion mode enabled"
     echo "⚠️  WARNING: This will PERMANENTLY delete all storage accounts and data!"
     sleep 2
+else
+    # Prompt user upfront about whether to delete storage
+    echo ""
+    echo "⚠️  Storage accounts were found. Would you like to delete them?"
+    echo "   This will PERMANENTLY delete all storage accounts and their data!"
+    read -p "Delete storage accounts? (y/N): " -r
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        DELETE_STORAGE=true
+        echo "🗑️  Storage deletion enabled"
+    else
+        echo "ℹ️  Storage accounts will be preserved (network restrictions removed only)"
+    fi
 fi
 
 # Use process substitution to avoid subshell issues with variables like DELETE_STORAGE
@@ -234,18 +246,8 @@ while read -r STORAGE_ACCOUNT_NAME STORAGE_RG; do
         done
         echo ""
 
-        DELETE_SHARES=false
         if [ "$DELETE_STORAGE" = true ]; then
-            echo "🗑️  Automatically deleting file shares (--delete-storage mode)..."
-            DELETE_SHARES=true
-        else
-            read -p "Do you want to delete file shares in '$STORAGE_ACCOUNT_NAME'? This will PERMANENTLY delete all data! (y/N): " -r
-            if [[ $REPLY =~ ^[Yy]$ ]]; then
-                DELETE_SHARES=true
-            fi
-        fi
-
-        if [ "$DELETE_SHARES" = true ]; then
+            echo "🗑️  Deleting file shares..."
             for share in $FILE_SHARES; do
                 echo "Deleting file share: $share"
                 az storage share delete \
@@ -264,19 +266,8 @@ while read -r STORAGE_ACCOUNT_NAME STORAGE_RG; do
 
     # Handle storage account deletion based on mode
     echo ""
-    DELETE_ACCOUNT=false
     if [ "$DELETE_STORAGE" = true ]; then
-        echo "🗑️  Automatically deleting storage account (--delete-storage mode)..."
-        DELETE_ACCOUNT=true
-    else
-        read -p "Do you want to delete the entire storage account '$STORAGE_ACCOUNT_NAME'? This will PERMANENTLY delete all data! (y/N): " -r
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            DELETE_ACCOUNT=true
-        fi
-    fi
-
-    if [ "$DELETE_ACCOUNT" = true ]; then
-        echo "Deleting storage account..."
+        echo "🗑️  Deleting storage account: $STORAGE_ACCOUNT_NAME"
         az storage account delete \
             --name "$STORAGE_ACCOUNT_NAME" \
             --resource-group "$STORAGE_RG" \
