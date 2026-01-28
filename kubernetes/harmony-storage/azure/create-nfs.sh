@@ -274,40 +274,20 @@ if [ -n "$VNET_SUBNET_ID" ] && [ "$VNET_SUBNET_ID" != "null" ]; then
     # Add network rule for the cluster subnet
     echo "Adding network rule for cluster subnet..."
 
-    # Use the full subnet resource ID directly (Azure CLI accepts either ID or name+vnet-name)
+    # Try with vnet-name and subnet name (most reliable approach)
     NETWORK_RULE_OUTPUT=$(az storage account network-rule add \
         --resource-group "$NODE_RESOURCE_GROUP" \
         --account-name "$STORAGE_ACCOUNT_NAME" \
-        --subnet "$VNET_SUBNET_ID" \
+        --vnet-name "$VNET_NAME" \
+        --subnet "$SUBNET_NAME" \
         --output none 2>&1)
     NETWORK_RULE_RESULT=$?
 
     if [ $NETWORK_RULE_RESULT -eq 0 ]; then
         echo "✅ Network rule added"
     else
-        # If full ID failed, try with vnet-name and subnet name separately
-        # Note: When the VNet is in a different resource group, we need to specify it
-        echo "   Retrying with vnet-name and subnet name..."
-        NETWORK_RULE_OUTPUT2=$(az network vnet subnet show \
-            --resource-group "$VNET_RESOURCE_GROUP" \
-            --vnet-name "$VNET_NAME" \
-            --name "$SUBNET_NAME" \
-            --query id --output tsv 2>&1)
-
-        if [ -n "$NETWORK_RULE_OUTPUT2" ] && [[ ! "$NETWORK_RULE_OUTPUT2" =~ "ERROR" ]]; then
-            # Use the verified subnet ID
-            if az storage account network-rule add \
-                --resource-group "$NODE_RESOURCE_GROUP" \
-                --account-name "$STORAGE_ACCOUNT_NAME" \
-                --subnet "$NETWORK_RULE_OUTPUT2" \
-                --output none 2>&1; then
-                echo "✅ Network rule added (using verified subnet ID)"
-            else
-                echo "⚠️  Network rule may already exist or failed to add"
-            fi
-        else
-            echo "⚠️  Network rule may already exist or failed to add"
-        fi
+        echo "⚠️  Network rule may already exist or failed to add"
+        echo "   Debug output: $NETWORK_RULE_OUTPUT"
     fi
 
     # Verify network rules were added
