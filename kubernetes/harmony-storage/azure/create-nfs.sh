@@ -109,12 +109,12 @@ if [ "$(echo "$EXISTING_ACCOUNTS" | jq length)" -gt 0 ]; then
         echo "Waiting for network access changes to propagate (60 seconds)..."
         sleep 60
 
-        # Create the NFS file share
-        az storage share create \
-            --account-name "$EXISTING_ACCOUNT_NAME" \
-            --account-key "$EXISTING_STORAGE_KEY" \
+        # Create the NFS file share using share-rm (supports NFS protocol)
+        az storage share-rm create \
+            --storage-account "$EXISTING_ACCOUNT_NAME" \
+            --resource-group "$EXISTING_ACCOUNT_RG" \
             --name "$FILE_SHARE_NAME" \
-            --protocol nfs \
+            --enabled-protocols NFS \
             --quota 100
 
         SHARE_CREATE_RESULT=$?
@@ -165,10 +165,17 @@ echo "Note: Storage account will be created in the managed resource group for CS
 if [ -n "$VNET_SUBNET_ID" ] && [ "$VNET_SUBNET_ID" != "null" ]; then
     echo "Cluster subnet ID: $VNET_SUBNET_ID"
 
-    # Parse VNet information
+    # Parse VNet information from the subnet resource ID
+    # Format: /subscriptions/.../resourceGroups/RG/providers/Microsoft.Network/virtualNetworks/VNET/subnets/SUBNET
     VNET_NAME=$(echo "$VNET_SUBNET_ID" | cut -d'/' -f9)
     SUBNET_NAME=$(echo "$VNET_SUBNET_ID" | cut -d'/' -f11)
     VNET_RESOURCE_GROUP=$(echo "$VNET_SUBNET_ID" | cut -d'/' -f5)
+
+    # Trim any whitespace
+    VNET_NAME=$(echo "$VNET_NAME" | tr -d '[:space:]')
+    SUBNET_NAME=$(echo "$SUBNET_NAME" | tr -d '[:space:]')
+    VNET_RESOURCE_GROUP=$(echo "$VNET_RESOURCE_GROUP" | tr -d '[:space:]')
+    VNET_SUBNET_ID=$(echo "$VNET_SUBNET_ID" | tr -d '[:space:]')
 
     echo "VNet: $VNET_NAME"
     echo "Subnet: $SUBNET_NAME"
@@ -194,7 +201,6 @@ else
             echo "   Resource Group: $VNET_RESOURCE_GROUP"
         else
             echo "⚠️  Could not find suitable subnet in VNet. Network restrictions will be limited."
-            echo "   Debug: VNET_NAME=$VNET_NAME, SUBNET_NAME=$SUBNET_NAME"
             VNET_SUBNET_ID=""
         fi
     else
@@ -267,14 +273,21 @@ if [ -n "$VNET_SUBNET_ID" ] && [ "$VNET_SUBNET_ID" != "null" ]; then
 
     # Add network rule for the cluster subnet
     echo "Adding network rule for cluster subnet..."
-    if az storage account network-rule add \
+
+    # Try with vnet-name and subnet name (most reliable approach)
+    NETWORK_RULE_OUTPUT=$(az storage account network-rule add \
         --resource-group "$NODE_RESOURCE_GROUP" \
         --account-name "$STORAGE_ACCOUNT_NAME" \
-        --subnet "$VNET_SUBNET_ID" \
-        --output none 2>&1; then
+        --vnet-name "$VNET_NAME" \
+        --subnet "$SUBNET_NAME" \
+        --output none 2>&1)
+    NETWORK_RULE_RESULT=$?
+
+    if [ $NETWORK_RULE_RESULT -eq 0 ]; then
         echo "✅ Network rule added"
     else
         echo "⚠️  Network rule may already exist or failed to add"
+        echo "   Debug output: $NETWORK_RULE_OUTPUT"
     fi
 
     # Verify network rules were added
@@ -319,11 +332,12 @@ if [ "$CURRENT_DEFAULT_ACTION" = "Deny" ] && [ -n "$VNET_SUBNET_ID" ]; then
     sleep 60
 fi
 
-az storage share create \
-    --account-name "$STORAGE_ACCOUNT_NAME" \
-    --account-key "$STORAGE_KEY" \
+# Create the NFS file share using share-rm (supports NFS protocol in newer Azure CLI)
+az storage share-rm create \
+    --storage-account "$STORAGE_ACCOUNT_NAME" \
+    --resource-group "$NODE_RESOURCE_GROUP" \
     --name "$FILE_SHARE_NAME" \
-    --protocol nfs \
+    --enabled-protocols NFS \
     --quota 100
 
 SHARE_CREATE_RESULT=$?
@@ -411,7 +425,7 @@ echo "     storageClass.nfs.storageAccountName: \"$STORAGE_ACCOUNT_NAME\""
 echo "     storageClass.nfs.shareName: \"$FILE_SHARE_NAME\""
 echo ""
 echo "  2. Install the harmony-storage chart:"
-echo "     helm install harmony-storage ../harmony-storage -f my-values.yaml -n harmony --create-namespace"
+echo "     helm install harmony-storage . -f my-values.yaml -n harmony --create-namespace"
 echo ""
 echo "Verification Commands:"
 echo "  az storage account show --name $STORAGE_ACCOUNT_NAME --resource-group $NODE_RESOURCE_GROUP"
