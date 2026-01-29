@@ -12,7 +12,13 @@
 #
 # Do NOT run: ./setup-env.sh (variables will be lost when script exits)
 
-echo "🔧 Azure NFS Scripts Environment Setup"
+# Color codes for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+printf "%b\n" "${GREEN}🔧 Azure NFS Scripts Environment Setup${NC}"
 echo "======================================"
 
 # Cross-platform compatibility check
@@ -47,7 +53,7 @@ check_platform_compatibility() {
     fi
     
     if [ ${#missing_commands[@]} -ne 0 ]; then
-        echo "❌ Missing required commands: ${missing_commands[*]}"
+        printf "%b\n" "${RED}❌ Missing required commands: ${missing_commands[*]}${NC}"
         echo ""
         echo "Installation instructions:"
         if [[ "$platform_detected" == "Linux"* ]]; then
@@ -66,7 +72,7 @@ check_platform_compatibility() {
         return 1
     fi
     
-    echo "✅ All required commands available"
+    printf "%b\n" "${GREEN}✅ All required commands available${NC}"
     return 0
 }
 
@@ -78,7 +84,7 @@ echo ""
 
 # Check if script is being sourced or executed
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-    echo "⚠️  WARNING: This script is being executed, not sourced!"
+    printf "%b\n" "${YELLOW}⚠️  WARNING: This script is being executed, not sourced!${NC}"
     echo "Environment variables will NOT be available in your terminal after this script finishes."
     echo ""
     echo "To make variables available in your current terminal, please run:"
@@ -93,14 +99,14 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     fi
     CREATE_EXPORT_FILE=true
 else
-    echo "✅ Script is being sourced - variables will be available in this terminal!"
+    printf "%b\n" "${GREEN}✅ Script is being sourced - variables will be available in this terminal!${NC}"
     CREATE_EXPORT_FILE=false
 fi
 echo ""
 
 # Check if user is logged in
 if ! az account show &> /dev/null; then
-    echo "❌ You are not logged into Azure CLI. Please run 'az login' first."
+    printf "%b\n" "${RED}❌ You are not logged into Azure CLI. Please run 'az login' first.${NC}"
     exit 1
 fi
 
@@ -113,7 +119,7 @@ echo "📋 Finding your AKS clusters..."
 AVAILABLE_CLUSTERS=$(az aks list --query '[].name' --output tsv 2>/dev/null)
 
 if [ -z "$AVAILABLE_CLUSTERS" ]; then
-    echo "❌ No AKS clusters found or unable to list clusters."
+    printf "%b\n" "${RED}❌ No AKS clusters found or unable to list clusters.${NC}"
     echo "Please check your Azure CLI configuration and permissions."
     exit 1
 fi
@@ -127,7 +133,7 @@ echo ""
 read -p "Enter your AKS cluster name: " CLUSTER_NAME
 
 if [ -z "$CLUSTER_NAME" ]; then
-    echo "❌ Cluster name cannot be empty."
+    printf "%b\n" "${RED}❌ Cluster name cannot be empty.${NC}"
     exit 1
 fi
 
@@ -136,7 +142,7 @@ echo "📋 Validating cluster '$CLUSTER_NAME'..."
 CLUSTER_INFO=$(az aks list --query "[?name=='$CLUSTER_NAME'] | [0].{resourceGroup: resourceGroup, location: location, nodeResourceGroup: nodeResourceGroup}" --output json 2>/dev/null)
 
 if [ -z "$CLUSTER_INFO" ] || [ "$CLUSTER_INFO" = "null" ]; then
-    echo "❌ Cluster '$CLUSTER_NAME' not found."
+    printf "%b\n" "${RED}❌ Cluster '$CLUSTER_NAME' not found.${NC}"
     echo "Please check the cluster name and try again."
     exit 1
 fi
@@ -145,7 +151,7 @@ RESOURCE_GROUP=$(echo "$CLUSTER_INFO" | jq -r '.resourceGroup')
 LOCATION=$(echo "$CLUSTER_INFO" | jq -r '.location')
 NODE_RESOURCE_GROUP=$(echo "$CLUSTER_INFO" | jq -r '.nodeResourceGroup')
 
-echo "✅ Found cluster '$CLUSTER_NAME' in resource group '$RESOURCE_GROUP', location '$LOCATION'"
+printf "%b\n" "${GREEN}✅ Found cluster '$CLUSTER_NAME' in resource group '$RESOURCE_GROUP', location '$LOCATION'${NC}"
 
 # Set environment variables
 export CLUSTER_NAME="$CLUSTER_NAME"
@@ -154,7 +160,7 @@ export LOCATION="$LOCATION"
 export NODE_RESOURCE_GROUP="$NODE_RESOURCE_GROUP"
 
 echo ""
-echo "🎉 Environment variables configured successfully!"
+printf "%b\n" "${GREEN}🎉 Environment variables configured successfully!${NC}"
 echo ""
 echo "Current configuration:"
 echo "  CLUSTER_NAME: $CLUSTER_NAME"
@@ -237,7 +243,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
 fi
 
 echo ""
-echo "🚀 You're ready to run the Azure NFS scripts!"
+printf "%b\n" "${GREEN}🚀 You're ready to run the Azure NFS scripts!${NC}"
 echo ""
 echo "Next steps:"
 echo "1. Install Azure Files CSI driver:  ./install-nfs-csi-driver.sh"
@@ -250,7 +256,7 @@ if [ "$CREATE_EXPORT_FILE" = true ]; then
     echo "  source ./aks-env-vars.sh"
     echo ""
 else
-    echo "✅ Environment variables are available in this terminal session."
+    printf "%b\n" "${GREEN}✅ Environment variables are available in this terminal session.${NC}"
 fi
 
 if [[ ! $REPLY =~ ^[Yy]$ ]] && [ "$CREATE_EXPORT_FILE" = true ]; then
