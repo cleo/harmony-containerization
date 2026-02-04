@@ -12,7 +12,13 @@
 #
 # Do NOT run: ./setup-env.sh (variables will be lost when script exits)
 
-echo "🔧 EFS Scripts Environment Setup"
+# Color codes for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+printf "%b\n" "${GREEN}🔧 EFS Scripts Environment Setup${NC}"
 echo "================================"
 
 # Cross-platform compatibility check
@@ -43,7 +49,7 @@ check_platform_compatibility() {
     fi
     
     if [ ${#missing_commands[@]} -ne 0 ]; then
-        echo "❌ Missing required commands: ${missing_commands[*]}"
+        printf "%b\n" "${RED}❌ Missing required commands: ${missing_commands[*]}${NC}"
         echo ""
         echo "Installation instructions:"
         if [[ "$platform_detected" == "Linux"* ]]; then
@@ -59,7 +65,7 @@ check_platform_compatibility() {
         return 1
     fi
     
-    echo "✅ All required commands available"
+    printf "%b\n" "${GREEN}✅ All required commands available${NC}"
     return 0
 }
 
@@ -71,7 +77,7 @@ echo ""
 
 # Check if script is being sourced or executed
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-    echo "⚠️  WARNING: This script is being executed, not sourced!"
+    printf "%b\n" "${YELLOW}⚠️  WARNING: This script is being executed, not sourced!${NC}"
     echo "Environment variables will NOT be available in your terminal after this script finishes."
     echo ""
     echo "To make variables available in your current terminal, please run:"
@@ -86,10 +92,16 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     fi
     CREATE_EXPORT_FILE=true
 else
-    echo "✅ Script is being sourced - variables will be available in this terminal!"
+    printf "%b\n" "${GREEN}✅ Script is being sourced - variables will be available in this terminal!${NC}"
     CREATE_EXPORT_FILE=false
 fi
 echo ""
+
+# Check if user is logged in
+if ! aws sts get-caller-identity &> /dev/null; then
+    printf "%b\n" "${RED}❌ You are not logged into AWS CLI. Please run 'aws configure' first.${NC}"
+    exit 1
+fi
 
 echo ""
 echo "Let's configure your environment variables for the EFS scripts."
@@ -100,7 +112,7 @@ echo "📋 Finding your EKS clusters..."
 AVAILABLE_CLUSTERS=$(aws eks list-clusters --query 'clusters' --output text 2>/dev/null)
 
 if [ -z "$AVAILABLE_CLUSTERS" ]; then
-    echo "❌ No EKS clusters found or unable to list clusters."
+    printf "%b\n" "${RED}❌ No EKS clusters found or unable to list clusters.${NC}"
     echo "Please check your AWS CLI configuration and permissions."
     exit 1
 fi
@@ -114,7 +126,7 @@ echo ""
 read -p "Enter your EKS cluster name: " CLUSTER_NAME
 
 if [ -z "$CLUSTER_NAME" ]; then
-    echo "❌ Cluster name cannot be empty."
+    printf "%b\n" "${RED}❌ Cluster name cannot be empty.${NC}"
     exit 1
 fi
 
@@ -135,19 +147,19 @@ for region in $REGIONS; do
 done
 
 if [ "$CLUSTER_FOUND" = false ]; then
-    echo "❌ Cluster '$CLUSTER_NAME' not found in any region."
+    printf "%b\n" "${RED}❌ Cluster '$CLUSTER_NAME' not found in any region.${NC}"
     echo "Please check the cluster name and try again."
     exit 1
 fi
 
-echo "✅ Found cluster '$CLUSTER_NAME' in region '$CLUSTER_REGION'"
+printf "%b\n" "${GREEN}✅ Found cluster '$CLUSTER_NAME' in region '$CLUSTER_REGION'${NC}"
 
 # Set environment variables
 export CLUSTER_NAME="$CLUSTER_NAME"
 export CLUSTER_REGION="$CLUSTER_REGION"
 
 echo ""
-echo "🎉 Environment variables configured successfully!"
+printf "%b\n" "${GREEN}🎉 Environment variables configured successfully!${NC}"
 echo ""
 echo "Current configuration:"
 echo "  CLUSTER_NAME: $CLUSTER_NAME"
@@ -210,7 +222,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
 fi
 
 echo ""
-echo "🚀 You're ready to run the EFS scripts!"
+printf "%b\n" "${GREEN}🚀 You're ready to run the EFS scripts!${NC}"
 echo ""
 echo "Next steps:"
 echo "1. Install EFS CSI driver:  ./install-efs-csi-driver.sh"
@@ -223,7 +235,7 @@ if [ "$CREATE_EXPORT_FILE" = true ]; then
     echo "  source ./eks-env-vars.sh"
     echo ""
 else
-    echo "✅ Environment variables are available in this terminal session."
+    printf "%b\n" "${GREEN}✅ Environment variables are available in this terminal session.${NC}"
 fi
 
 if [[ ! $REPLY =~ ^[Yy]$ ]] && [ "$CREATE_EXPORT_FILE" = true ]; then

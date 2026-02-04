@@ -8,31 +8,36 @@
 #   ./cleanup-nfs.sh                    # Interactive mode - prompts for each deletion
 #   ./cleanup-nfs.sh --delete-storage   # Automatically delete all storage accounts and shares
 #   ./cleanup-nfs.sh --help             # Show help message
+#
+# ⚠️  CRITICAL: Run this BEFORE deleting your AKS cluster to avoid orphaned resources
 
-# Configuration - these must be set as environment variables before running the script
-# Required environment variables:
-# - CLUSTER_NAME: Your AKS cluster name
+# Color codes for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
 # Configuration - these must be set as environment variables before running the script
 # Required environment variables:
 # - CLUSTER_NAME: Your AKS cluster name
 # - RESOURCE_GROUP: Your Azure resource group
 # - LOCATION: Your Azure region
 if [ -z "$CLUSTER_NAME" ]; then
-    echo "Error: CLUSTER_NAME environment variable is not set."
+    printf "%b\n" "${RED}❌ Error: CLUSTER_NAME environment variable is not set.${NC}"
     echo "Please set it before running this script:"
     echo "  export CLUSTER_NAME=your-cluster-name"
     exit 1
 fi
 
 if [ -z "$RESOURCE_GROUP" ]; then
-    echo "Error: RESOURCE_GROUP environment variable is not set."
+    printf "%b\n" "${RED}❌ Error: RESOURCE_GROUP environment variable is not set.${NC}"
     echo "Please set it before running this script:"
     echo "  export RESOURCE_GROUP=your-resource-group"
     exit 1
 fi
 
 if [ -z "$LOCATION" ]; then
-    echo "Error: LOCATION environment variable is not set."
+    printf "%b\n" "${RED}❌ Error: LOCATION environment variable is not set.${NC}"
     echo "Please set it before running this script:"
     echo "  export LOCATION=your-azure-region"
     exit 1

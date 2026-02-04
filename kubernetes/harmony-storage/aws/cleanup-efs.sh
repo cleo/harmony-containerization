@@ -3,20 +3,33 @@
 # cleanup-efs.sh - Cleanup EFS resources before tearing down EKS cluster
 # This script removes EFS mount targets and security group rules that prevent
 # clean EKS cluster deletion.
+#
+# Usage:
+#   ./cleanup-efs.sh                    # Interactive mode - prompts for each deletion
+#   ./cleanup-efs.sh --delete-storage   # Automatically delete EFS file system without prompts
+#   ./cleanup-efs.sh --help             # Show this help message
+#
+# ⚠️  CRITICAL: Run this BEFORE deleting your EKS cluster to avoid orphaned resources
+
+# Color codes for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
 
 # Configuration - these must be set as environment variables before running the script
 # Required environment variables:
 # - CLUSTER_NAME: Your EKS cluster name
 # - CLUSTER_REGION: Your AWS region
 if [ -z "$CLUSTER_NAME" ]; then
-    echo "Error: CLUSTER_NAME environment variable is not set."
+    printf "%b\n" "${RED}❌ Error: CLUSTER_NAME environment variable is not set.${NC}"
     echo "Please set it before running this script:"
     echo "  export CLUSTER_NAME=your-cluster-name"
     exit 1
 fi
 
 if [ -z "$CLUSTER_REGION" ]; then
-    echo "Error: CLUSTER_REGION environment variable is not set."
+    printf "%b\n" "${RED}❌ Error: CLUSTER_REGION environment variable is not set.${NC}"
     echo "Please set it before running this script:"
     echo "  export CLUSTER_REGION=your-aws-region"
     exit 1
