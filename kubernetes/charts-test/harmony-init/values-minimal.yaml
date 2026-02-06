@@ -8,7 +8,7 @@ harmonyInit:
   image:
     name: harmony
     repository: cleodev/harmony
-    tag: "PR-11140"
+    tag: "latest"
     pullPolicy: Always
 
   job:

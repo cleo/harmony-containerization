@@ -16,7 +16,7 @@ harmonyInit:
     name: harmony
     repository: cleodev/harmony
     # IMPORTANT: Use specific version tags in production, not 'latest' or PR tags
-    tag: "PR-11140"
+    tag: "latest"
     # IfNotPresent is recommended for production to avoid unnecessary pulls
     pullPolicy: IfNotPresent
 

@@ -66,7 +66,7 @@ harmony-run/
 | **Image Configuration** | | |
 | `harmony.image.name` | Container name in the pod | `harmony` |
 | `harmony.image.repository` | Docker image repository | `cleodev/harmony` |
-| `harmony.image.tag` | Image tag (use specific versions in production) | `PR-11140` |
+| `harmony.image.tag` | Image tag (use specific versions in production) | `latest` |
 | `harmony.image.pullPolicy` | Image pull policy (Always, IfNotPresent, Never) | `Always` |
 | **StatefulSet Configuration** | | |
 | `harmony.statefulset.replicas` | Number of Harmony runtime instances | `2` |

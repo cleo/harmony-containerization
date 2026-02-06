@@ -52,7 +52,7 @@ harmony-init/
 | **Image Configuration** | | |
 | `harmonyInit.image.name` | Container name in the pod | `harmony` |
 | `harmonyInit.image.repository` | Docker image repository | `cleodev/harmony` |
-| `harmonyInit.image.tag` | Image tag (use specific versions in production) | `PR-11140` |
+| `harmonyInit.image.tag` | Image tag (use specific versions in production) | `latest` |
 | `harmonyInit.image.pullPolicy` | Image pull policy (Always, IfNotPresent, Never) | `Always` |
 | **Job Configuration** | | |
 | `harmonyInit.job.backoffLimit` | Number of retries before marking job as failed | `2` |
