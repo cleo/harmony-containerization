@@ -21,7 +21,7 @@ harmony:
     name: harmony
     repository: cleodev/harmony
     # IMPORTANT: Use specific version tags in production
-    tag: PR-11140
+    tag: latest
     pullPolicy: IfNotPresent
 
   # StatefulSet configuration

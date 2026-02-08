@@ -3,7 +3,7 @@ name: harmony-run
 description: A Helm chart for deploying Harmony runtime instances
 type: application
 version: 1.0.0
-appVersion: "PR-11140"
+appVersion: "5.8.1.8"
 keywords:
   - harmony
   - runtime
