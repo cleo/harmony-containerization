@@ -211,7 +211,7 @@ Example **GCS** secret file:
 ```yaml
 ---
 type: GCPBucket
-rootPath: >path>
+rootPath: <path>
 connectorProperties:
   googleAccountKey: |
     {
