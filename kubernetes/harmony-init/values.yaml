@@ -14,7 +14,7 @@ harmonyInit:
     # Docker image repository
     repository: cleodev/harmony
     # Image tag - use specific version tags in production
-    tag: latest
+    tag: 6.0.0.1
     # Image pull policy: Always, IfNotPresent, Never
     # Use IfNotPresent for production with specific tags
     pullPolicy: Always

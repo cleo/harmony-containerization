@@ -47,7 +47,7 @@ Harmony will email the system administrator if the grace period is initiated. Th
 
 ### Resource Requirements
 
-Refer to the latest Harmony release system requirements: [Cleo Harmony 5.8.1 System Requirements](https://documentation.cleo.com/harmony/5.8.1/Content/SystemRequirements.htm).
+Refer to the latest Harmony release system requirements: [Cleo Harmony 6.0 System Requirements](https://support.cleo.com/hc/en-us/articles/41414681009303-Cleo-Harmony-6-0-System-Requirements).
 
 ### VLProxy
 

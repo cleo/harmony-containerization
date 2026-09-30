@@ -13,7 +13,7 @@ harmony:
   image:
     name: harmony
     repository: cleodev/harmony
-    tag: latest
+    tag: 6.0.0.1
     pullPolicy: Always
 
   # StatefulSet configuration
