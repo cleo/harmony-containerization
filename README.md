@@ -39,9 +39,9 @@ Each Harmony node's system log events are stored in real-time into the customer-
 
 ### Access to cleo.com
 
-Each Harmony container verifies the enterprise license at startup. To do this, https://license.cleo.com must be accessible from the container.
+Each Harmony container verifies the enterprise license at startup. To do this, `https://license.cleo.com` must be accessible from the container.
 
-If license.cleo.com is not accessible at startup, Harmony still starts and periodically retries license verification, initiating a four-day grace period. If the license is not verified within the grace period, the container exits. If the issue is determined to be on Cleo's side, Harmony automatically creates an internal Cleo IT ticket for the affected enterprise license by posting to https://it-ticket.cleo.com.
+If license.cleo.com is not accessible at startup, Harmony still starts and periodically retries license verification, initiating a four-day grace period. If the license is not verified within the grace period, the container exits. If the issue is determined to be on Cleo's side, Harmony automatically creates an internal Cleo IT ticket for the affected enterprise license by posting to `https://it-ticket.cleo.com`.
 
 Harmony will email the system administrator if the grace period is initiated. Therefore, Cleo strongly recommends setting the system administrator email address and the necessary SMTP proxy.
 
