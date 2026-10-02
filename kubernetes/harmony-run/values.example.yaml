@@ -108,31 +108,31 @@ service:
       # HTTP - Enable for web-based file transfer
       - name: http
         port: 80
-        targetPort: 80
-        enabled: true
+        targetPort: 5080
+        enabled: false
       
       # HTTPS - Enable for secure web-based file transfer and AS2
       - name: https
         port: 443
-        targetPort: 443
+        targetPort: 5443
         enabled: true
       
       # SFTP - Enable for secure file transfer
       - name: sftp
         port: 22
-        targetPort: 22
+        targetPort: 5022
         enabled: true
       
       # FTP Control - Enable for FTP protocol
       - name: ftp-control
         port: 21
-        targetPort: 21
+        targetPort: 5021
         enabled: false
       
       # FTP Data - Enable if using active FTP
       - name: ftp-data
         port: 20
-        targetPort: 20
+        targetPort: 5020
         enabled: false
       
       # SMTP - Enable for email-based file transfer
@@ -186,7 +186,7 @@ service:
         - name: ftp-passive-5
           port: 25904
           targetPort: 25904
-        # Add more ports as needed, up to 25910 (5 ports shown by default)
+        # Add more ports as needed, up to 25919 (5 ports shown by default)
         # Passive port range must match what's configured in Harmony admin console
 
 # Persistent storage configuration
@@ -206,7 +206,7 @@ persistence:
 #     ports:
 #       - name: ftp-control
 #         port: 21
-#         targetPort: 21
+#         targetPort: 5021
 #         enabled: true
 #     passiveFtp:
 #       enabled: true

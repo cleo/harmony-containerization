@@ -203,11 +203,11 @@ service:
         enabled: true
       - name: https
         port: 443
-        targetPort: 443
+        targetPort: 5443
         enabled: true
       - name: sftp
         port: 22
-        targetPort: 22
+        targetPort: 5022
         enabled: true
 
 persistence:

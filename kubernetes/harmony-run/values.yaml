@@ -90,23 +90,23 @@ service:
         enabled: true
       - name: http
         port: 80
-        targetPort: 80
+        targetPort: 5080
         enabled: false
       - name: https
         port: 443
-        targetPort: 443
+        targetPort: 5443
         enabled: false
       - name: ftpData
         port: 20
-        targetPort: 20
+        targetPort: 5020
         enabled: false
       - name: ftpControl
         port: 21
-        targetPort: 21
+        targetPort: 5021
         enabled: false
       - name: sftp
         port: 22
-        targetPort: 22
+        targetPort: 5022
         enabled: false
       - name: oftpStandard
         port: 3305

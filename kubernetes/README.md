@@ -501,11 +501,11 @@ cat > system-settings.yaml << 'EOF'
 ---
 nodes:
 - alias: harmony-1
-  url: https://harmony-1.harmony-service.harmony.svc.cluster.local:6443
+  url: https://harmony-1.harmony-service.harmony.svc.cluster.local:5443
 - alias: harmony-2
-  url: https://harmony-2.harmony-service.harmony.svc.cluster.local:6443
+  url: https://harmony-2.harmony-service.harmony.svc.cluster.local:5443
 - alias: harmony-3
-  url: https://harmony-3.harmony-service.harmony.svc.cluster.local:6443
+  url: https://harmony-3.harmony-service.harmony.svc.cluster.local:5443
 EOF
 
 # Create config-repo.yaml (using shared storage)
@@ -684,11 +684,11 @@ service:
         enabled: true
       - name: https
         port: 443
-        targetPort: 443
+        targetPort: 5443
         enabled: true
       - name: sftp
         port: 22
-        targetPort: 22
+        targetPort: 5022
         enabled: true
 
 persistence:
