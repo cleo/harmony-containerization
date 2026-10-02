@@ -132,15 +132,15 @@ Sample system settings file is [here](secrets/sample-system-settings.yaml) - Thi
 ---
 nodes:
 - alias: harmony-1
-  url: https://harmony-1.harmony-service.harmony.svc.cluster.local:6443
+  url: https://harmony-1.harmony-service.harmony.svc.cluster.local:5443
 - alias: harmony-2
-  url: https://harmony-2.harmony-service.harmony.svc.cluster.local:6443
+  url: https://harmony-2.harmony-service.harmony.svc.cluster.local:5443
 - alias: harmony-3
-  url: https://harmony-3.harmony-service.harmony.svc.cluster.local:6443
+  url: https://harmony-3.harmony-service.harmony.svc.cluster.local:5443
 - alias: harmony-4
-  url: https://harmony-4.harmony-service.harmony.svc.cluster.local:6443
+  url: https://harmony-4.harmony-service.harmony.svc.cluster.local:5443
 - alias: harmony-5
-  url: https://harmony-5.harmony-service.harmony.svc.cluster.local:6443
+  url: https://harmony-5.harmony-service.harmony.svc.cluster.local:5443
 ```
 
 ### Example `cleo-config-repo` and `cleo-runtime-repo` files
