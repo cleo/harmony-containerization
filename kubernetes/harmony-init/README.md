@@ -234,7 +234,7 @@ advancedProperties:
 
 ### Example `cleo-log-system` file
 
-The following are some example secret files that can be used with the `cleo-log-system` secret. These files define the logger configuration for the Harmony application. The type of logger can be Datadog or Splunk and the configuration will vary based on the type. See [here](https://developer.cleo.com/api/api-reference/resource-connections) for the full set of `connectorProperties`.
+The following are some example secret files that can be used with the `cleo-log-system` secret. These files define the logger configuration for the Harmony application. The type of logger can be Datadog, Splunk, or Google Cloud Logging, and the configuration will vary based on the type. See [here](https://developer.cleo.com/api/api-reference/resource-connections) for the full set of `connectorProperties`.
 
 Example **Datadog** secret file:
 
@@ -262,6 +262,33 @@ connectorProperties:
 advancedProperties:
   logLevel: DEBUG
 ```
+
+Example **Google Cloud Logging** secret file:
+
+```yaml
+---
+type: gcplogging
+connectorProperties:
+  projectId: <project-id>
+  logName: <log-name>
+  resourceType: global
+  serviceAccountKey: |
+    {
+      "type": "service_account",
+      "project_id": "<project_id>",
+      "private_key_id": "<private_key_id>",
+      "private_key": "<private_key>",
+      "client_email": "<client_email>",
+      "client_id": "<client_id>",
+      "auth_uri": "<auth_uri>",
+      "token_uri": "<token_uri>",
+      "auth_provider_x509_cert_url": "<auth_provider_x509_cert_url>",
+      "client_x509_cert_url": "<client_x509_cert_url>",
+      "universe_domain": "googleapis.com"
+    }
+```
+> [!NOTE]
+> Harmony writes log events to Google Cloud Logging and reads them back to display them in the Admin Web UI and REST API. The service account in `serviceAccountKey` must have permission to write **and** read log entries in the target project. If it can only write, logs will appear to be sent successfully, but the UI will fail to retrieve them.
 
 ## Deployment
 
